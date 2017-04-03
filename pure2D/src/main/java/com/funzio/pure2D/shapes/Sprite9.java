@@ -48,6 +48,9 @@ public class Sprite9 extends UniGroup {
     private boolean m9PatchEnabled = true;
     private boolean mHasPatches = false;
     private boolean mSizeToTexture = false;
+    private boolean mSizeToFrame = false;
+
+    private AtlasFrame mAtlasFrame;
 
     public Sprite9() {
         super();
@@ -104,6 +107,24 @@ public class Sprite9 extends UniGroup {
         }
     }
 
+    public void setAtlasFrame(AtlasFrame atlasFrame) {
+        mAtlasFrame = atlasFrame;
+    }
+
+    public boolean isSizeToFrame() {
+        return mSizeToFrame;
+    }
+
+    public void setSizeToFrame(final boolean sizeToFrame) {
+        mSizeToFrame = sizeToFrame;
+
+        // fit size to frame
+        if (mAtlasFrame != null && sizeToFrame) {
+            setSize(mAtlasFrame.getSize());
+        }
+    }
+
+
     @Override
     public void setTexture(final Texture texture) {
         super.setTexture(texture);
@@ -137,8 +158,10 @@ public class Sprite9 extends UniGroup {
 
             // some constants
             final boolean patching = m9PatchEnabled && mHasPatches;
-            final float textureW = mTexture.getSize().x;
-            final float textureH = mTexture.getSize().y;
+            final float textureX = mAtlasFrame != null ? mAtlasFrame.getRect().left : 0;
+            final float textureY = mAtlasFrame != null ? mAtlasFrame.getRect().top : 0;
+            final float textureW = mAtlasFrame != null ? mAtlasFrame.getRect().width() : mTexture.getSize().x;
+            final float textureH = mAtlasFrame != null ? mAtlasFrame.getRect().height() : mTexture.getSize().y;
             float left = patching ? m9Patches.left : 0;
             float right = patching ? m9Patches.right : 0;
             float top = patching ? m9Patches.top : 0;
@@ -168,7 +191,6 @@ public class Sprite9 extends UniGroup {
                 heights[0] = top;
                 heights[2] = bottom;
             }
-
             // texture coordinates
             final float[] scaleX = {
                     left, (textureW - left - right), right
@@ -176,6 +198,7 @@ public class Sprite9 extends UniGroup {
             final float[] scaleY = {
                     bottom, (textureH - top - bottom), top
             };
+
             // swap for AXIS_TOP_LEFT
             if (mScene != null && mScene.getAxisSystem() == Scene.AXIS_TOP_LEFT) {
                 final float temp = scaleY[0];
@@ -211,9 +234,9 @@ public class Sprite9 extends UniGroup {
                         frame.setTexture(mTexture);
 
                         if (mScene != null && mScene.getAxisSystem() == Scene.AXIS_TOP_LEFT) {
-                            frame.setRect(tx, tyInverted + th, tx + tw, tyInverted);
+                            frame.setRect(textureX + tx, textureY + tyInverted + th, textureX + tx + tw, textureY + tyInverted);
                         } else {
-                            frame.setRect(tx, ty - th, tx + tw, ty);
+                            frame.setRect(textureX + tx, textureY + ty - th, textureX + tx + tw, textureY + ty);
                         }
                         sprite.setAtlasFrame(frame); // apply
                         // Log.e("long", mTexture + " " + sprite.getAtlasFrame().toString());
